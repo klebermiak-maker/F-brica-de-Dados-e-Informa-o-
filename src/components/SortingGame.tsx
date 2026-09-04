@@ -343,7 +343,22 @@ export const SortingGame: React.FC<SortingGameProps> = ({
                 </div>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-200 flex justify-end">
+              <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between gap-2">
+                {correctCount >= 5 && currentIndex + 1 < items.length ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setGameFinished(true);
+                      soundManager.playFanfare(soundEnabled);
+                      triggerConfetti();
+                      onCompleteMission();
+                    }}
+                    className="text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-2 rounded-xl transition-all cursor-pointer"
+                  >
+                    ✨ Concluir Missão Agora ({correctCount} acertos)
+                  </button>
+                ) : <span />}
+
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}

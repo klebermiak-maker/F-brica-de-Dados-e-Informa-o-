@@ -89,6 +89,7 @@ export const DetectiveDecisionGame: React.FC<DetectiveDecisionGameProps> = ({
       onAddStar(2);
       if (!solvedCases.includes(caseIndex)) {
         setSolvedCases(prev => [...prev, caseIndex]);
+        onCompleteMission();
       }
     } else {
       soundManager.playTryAgain(soundEnabled);

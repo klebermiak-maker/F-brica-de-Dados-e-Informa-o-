@@ -156,6 +156,7 @@ export const ProcessingMachineGame: React.FC<ProcessingMachineGameProps> = ({
 
       if (!completedChallenges.includes(challengeIndex)) {
         setCompletedChallenges(prev => [...prev, challengeIndex]);
+        onCompleteMission();
       }
 
       if (voiceReadEnabled) {

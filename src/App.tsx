@@ -12,6 +12,7 @@ import { QuizGame } from './components/QuizGame';
 import { CertificateModal } from './components/CertificateModal';
 import { TeacherGuideModal } from './components/TeacherGuideModal';
 import { GlossaryModal } from './components/GlossaryModal';
+import { triggerMissionSuccessConfetti, triggerStarCelebration } from './utils/confetti';
 
 const DEFAULT_PROGRESS: UserProgress = {
   score: 0,
@@ -94,6 +95,7 @@ export default function App() {
   };
 
   const handleAddStar = (amount: number) => {
+    triggerStarCelebration();
     setProgress(prev => {
       const newStars = prev.stars + amount;
       const newScore = prev.score + amount * 10;
@@ -199,6 +201,7 @@ export default function App() {
                 voiceReadEnabled={progress.voiceReadEnabled}
                 onAddStar={handleAddStar}
                 onCompleteMission={() => {
+                  triggerMissionSuccessConfetti();
                   setProgress(prev => {
                     const updated = {
                       ...prev,
@@ -218,6 +221,7 @@ export default function App() {
                 voiceReadEnabled={progress.voiceReadEnabled}
                 onAddStar={handleAddStar}
                 onCompleteMission={() => {
+                  triggerMissionSuccessConfetti();
                   setProgress(prev => {
                     const updated = {
                       ...prev,
@@ -237,6 +241,7 @@ export default function App() {
                 voiceReadEnabled={progress.voiceReadEnabled}
                 onAddStar={handleAddStar}
                 onCompleteMission={() => {
+                  triggerMissionSuccessConfetti();
                   setProgress(prev => {
                     const updated = {
                       ...prev,
@@ -256,6 +261,7 @@ export default function App() {
                 voiceReadEnabled={progress.voiceReadEnabled}
                 onAddStar={handleAddStar}
                 onCompleteMission={() => {
+                  triggerMissionSuccessConfetti();
                   setProgress(prev => {
                     const updated = {
                       ...prev,
@@ -274,6 +280,7 @@ export default function App() {
                 voiceReadEnabled={progress.voiceReadEnabled}
                 onAddStar={handleAddStar}
                 onCompleteMission={(finalScore) => {
+                  triggerMissionSuccessConfetti();
                   setProgress(prev => {
                     const updated = {
                       ...prev,
