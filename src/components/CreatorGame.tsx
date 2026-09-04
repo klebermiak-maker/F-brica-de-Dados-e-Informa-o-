@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CREATIVE_THEMES } from '../data/gameData';
-import { soundManager, readAloud } from '../utils/audio';
+import { soundManager, readAloud, stopSpeaking } from '../utils/audio';
 import { triggerConfetti } from '../utils/confetti';
 import {
   Wand2,
@@ -95,8 +95,15 @@ export const CreatorGame: React.FC<CreatorGameProps> = ({
 
   const currentTheme = CREATIVE_THEMES.find(t => t.id === activeThemeId) || CREATIVE_THEMES[0];
 
+  useEffect(() => {
+    return () => {
+      stopSpeaking();
+    };
+  }, []);
+
   const handleSelectTheme = (themeId: string) => {
     soundManager.playPop(soundEnabled);
+    stopSpeaking();
     setActiveThemeId(themeId);
     setFormData({});
     setGeneratedResult(null);
@@ -140,13 +147,12 @@ export const CreatorGame: React.FC<CreatorGameProps> = ({
       onAddStar(3);
       onCompleteMission();
 
-      if (voiceReadEnabled) {
-        readAloud(info, true);
-      }
+      // Nota: Não fala automaticamente; o aluno pode clicar no botão 'Ouvir' quando desejar
     }, 1400);
   };
 
   const handleReset = () => {
+    stopSpeaking();
     setFormData({});
     setGeneratedResult(null);
     setCopied(false);

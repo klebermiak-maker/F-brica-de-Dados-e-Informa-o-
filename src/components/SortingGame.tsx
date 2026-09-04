@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SORTING_ITEMS } from '../data/gameData';
 import { SortingItem } from '../types';
-import { soundManager, readAloud } from '../utils/audio';
+import { soundManager, readAloud, stopSpeaking } from '../utils/audio';
 import { triggerConfetti } from '../utils/confetti';
+import { shuffleArray } from '../utils/shuffle';
 import {
   Volume2,
   CheckCircle2,
@@ -77,12 +78,19 @@ export const SortingGame: React.FC<SortingGameProps> = ({
   onGoToNextMission
 }) => {
   const [selectedFilter, setSelectedFilter] = useState<ThemeFilter>('todos');
-  const [cardOrder, setCardOrder] = useState<SortingItem[]>(SORTING_ITEMS);
+  const [cardOrder, setCardOrder] = useState<SortingItem[]>(() => shuffleArray(SORTING_ITEMS));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
+
+  // Parar qualquer áudio quando o componente desmontar
+  useEffect(() => {
+    return () => {
+      stopSpeaking();
+    };
+  }, []);
 
   // Filter items based on active tab
   const items = selectedFilter === 'todos'
@@ -93,7 +101,8 @@ export const SortingGame: React.FC<SortingGameProps> = ({
 
   const handleShuffle = () => {
     soundManager.playPop(soundEnabled);
-    const shuffled = [...cardOrder].sort(() => Math.random() - 0.5);
+    stopSpeaking();
+    const shuffled = shuffleArray(SORTING_ITEMS);
     setCardOrder(shuffled);
     setCurrentIndex(0);
     setAnswered(false);
@@ -103,6 +112,7 @@ export const SortingGame: React.FC<SortingGameProps> = ({
 
   const handleFilterChange = (filter: ThemeFilter) => {
     soundManager.playPop(soundEnabled);
+    stopSpeaking();
     setSelectedFilter(filter);
     setCurrentIndex(0);
     setAnswered(false);
@@ -125,13 +135,12 @@ export const SortingGame: React.FC<SortingGameProps> = ({
       soundManager.playTryAgain(soundEnabled);
     }
 
-    if (voiceReadEnabled) {
-      readAloud(currentItem.explanation, true);
-    }
+    // Nota pedagógica: Não fala automaticamente; o aluno só ouve quando clica em 'Ouvir'
   };
 
   const handleNext = () => {
     soundManager.playPop(soundEnabled);
+    stopSpeaking();
     setAnswered(false);
     if (currentIndex + 1 < items.length) {
       setCurrentIndex(prev => prev + 1);
@@ -144,6 +153,8 @@ export const SortingGame: React.FC<SortingGameProps> = ({
   };
 
   const handleRestart = () => {
+    stopSpeaking();
+    setCardOrder(shuffleArray(SORTING_ITEMS));
     setCurrentIndex(0);
     setAnswered(false);
     setIsCorrect(false);
@@ -340,6 +351,18 @@ export const SortingGame: React.FC<SortingGameProps> = ({
                   <p className="text-sm text-slate-700 leading-relaxed pt-1 font-medium">
                     {currentItem.explanation}
                   </p>
+
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => readAloud(currentItem.explanation, true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-full border border-slate-200 shadow-2xs transition-colors cursor-pointer"
+                      title="Ouvir a explicação"
+                    >
+                      <Volume2 className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Ouvir Explicação</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 

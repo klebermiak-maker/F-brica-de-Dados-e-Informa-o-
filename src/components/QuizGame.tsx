@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { QUIZ_QUESTIONS } from '../data/gameData';
-import { soundManager, readAloud } from '../utils/audio';
+import { QuizQuestion } from '../types';
+import { soundManager, readAloud, stopSpeaking } from '../utils/audio';
 import { triggerConfetti } from '../utils/confetti';
+import { shuffleArray } from '../utils/shuffle';
 import {
   HelpCircle,
   CheckCircle2,
@@ -30,6 +32,7 @@ export const QuizGame: React.FC<QuizGameProps> = ({
   onCompleteMission,
   onOpenCertificate
 }) => {
+  const [questions, setQuestions] = useState<QuizQuestion[]>(() => shuffleArray(QUIZ_QUESTIONS));
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [answered, setAnswered] = useState(false);
@@ -37,7 +40,13 @@ export const QuizGame: React.FC<QuizGameProps> = ({
   const [isFinished, setIsFinished] = useState(false);
   const [answeredQuestions, setAnsweredQuestions] = useState<Record<number, boolean>>({});
 
-  const question = QUIZ_QUESTIONS[currentIdx];
+  useEffect(() => {
+    return () => {
+      stopSpeaking();
+    };
+  }, []);
+
+  const question = questions[currentIdx] || questions[0];
 
   const handleSelectOption = (idx: number) => {
     if (answered) return;
@@ -59,17 +68,16 @@ export const QuizGame: React.FC<QuizGameProps> = ({
       [currentIdx]: isCorrect
     }));
 
-    if (voiceReadEnabled) {
-      readAloud(question.explanation, true);
-    }
+    // Nota pedagógica: Não fala automaticamente; o aluno pode clicar em 'Ouvir' quando desejar
   };
 
   const handleNext = () => {
     soundManager.playPop(soundEnabled);
+    stopSpeaking();
     setAnswered(false);
     setSelectedIdx(null);
 
-    if (currentIdx + 1 < QUIZ_QUESTIONS.length) {
+    if (currentIdx + 1 < questions.length) {
       setCurrentIdx(prev => prev + 1);
     } else {
       setIsFinished(true);
@@ -80,6 +88,8 @@ export const QuizGame: React.FC<QuizGameProps> = ({
   };
 
   const handleRestart = () => {
+    stopSpeaking();
+    setQuestions(shuffleArray(QUIZ_QUESTIONS));
     setCurrentIdx(0);
     setSelectedIdx(null);
     setAnswered(false);
@@ -108,7 +118,7 @@ export const QuizGame: React.FC<QuizGameProps> = ({
 
         <div className="flex items-center gap-3">
           <span className="text-xs font-bold text-violet-800 bg-violet-50 border border-violet-200 px-3 py-1.5 rounded-full">
-            Pergunta {currentIdx + 1} de {QUIZ_QUESTIONS.length}
+            Pergunta {currentIdx + 1} de {questions.length}
           </span>
           <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full flex items-center gap-1">
             <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
@@ -119,7 +129,7 @@ export const QuizGame: React.FC<QuizGameProps> = ({
 
       {/* Question Indicators */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none">
-        {QUIZ_QUESTIONS.map((_, qIndex) => {
+        {questions.map((_, qIndex) => {
           const isCurrent = qIndex === currentIdx;
           const status = answeredQuestions[qIndex];
 
@@ -146,7 +156,7 @@ export const QuizGame: React.FC<QuizGameProps> = ({
       <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden mb-5">
         <div
           className="bg-violet-600 h-full transition-all duration-300 rounded-full"
-          style={{ width: `${((currentIdx + (answered ? 1 : 0)) / QUIZ_QUESTIONS.length) * 100}%` }}
+          style={{ width: `${((currentIdx + (answered ? 1 : 0)) / questions.length) * 100}%` }}
         />
       </div>
 
@@ -248,6 +258,18 @@ export const QuizGame: React.FC<QuizGameProps> = ({
                     <p className="text-sm text-slate-700 mt-1 leading-relaxed font-medium">
                       {question.explanation}
                     </p>
+
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => readAloud(question.explanation, true)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-full border border-slate-200 shadow-2xs transition-colors cursor-pointer"
+                        title="Ouvir a explicação"
+                      >
+                        <Volume2 className="w-3.5 h-3.5 text-violet-600" />
+                        <span>Ouvir Explicação</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -259,7 +281,7 @@ export const QuizGame: React.FC<QuizGameProps> = ({
                     onClick={handleNext}
                     className="inline-flex items-center gap-2 bg-violet-700 hover:bg-violet-800 text-white font-extrabold px-5 py-2.5 rounded-xl text-sm transition-all cursor-pointer shadow-md"
                   >
-                    <span>{currentIdx + 1 < QUIZ_QUESTIONS.length ? 'Próxima Pergunta' : 'Ver Meu Resultado Final'}</span>
+                    <span>{currentIdx + 1 < questions.length ? 'Próxima Pergunta' : 'Ver Meu Resultado Final'}</span>
                     <ArrowRight className="w-4 h-4" />
                   </motion.button>
                 </div>

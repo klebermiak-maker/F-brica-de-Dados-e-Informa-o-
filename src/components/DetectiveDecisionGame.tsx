@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { DETECTIVE_CASES } from '../data/gameData';
-import { soundManager, readAloud } from '../utils/audio';
+import { DetectiveCase } from '../types';
+import { soundManager, readAloud, stopSpeaking } from '../utils/audio';
 import { triggerConfetti } from '../utils/confetti';
+import { shuffleArray } from '../utils/shuffle';
 import {
   Search,
   CheckCircle2,
@@ -69,13 +71,21 @@ export const DetectiveDecisionGame: React.FC<DetectiveDecisionGameProps> = ({
   onCompleteMission,
   onGoToNextMission
 }) => {
+  const [cases, setCases] = useState<DetectiveCase[]>(() => shuffleArray(DETECTIVE_CASES));
   const [caseIndex, setCaseIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [answered, setAnswered] = useState(false);
   const [finishedAll, setFinishedAll] = useState(false);
   const [solvedCases, setSolvedCases] = useState<number[]>([]);
 
-  const currentCase = DETECTIVE_CASES[caseIndex];
+  useEffect(() => {
+    return () => {
+      stopSpeaking();
+    };
+  }, []);
+
+  const currentCase = cases[caseIndex] || cases[0];
+  const shuffledOptions = useMemo(() => shuffleArray(currentCase.options), [currentCase]);
 
   const handleSelectOption = (optId: string) => {
     if (answered) return;
@@ -95,13 +105,12 @@ export const DetectiveDecisionGame: React.FC<DetectiveDecisionGameProps> = ({
       soundManager.playTryAgain(soundEnabled);
     }
 
-    if (voiceReadEnabled && chosen) {
-      readAloud(chosen.feedback, true);
-    }
+    // Nota pedagógica: Não fala automaticamente; o aluno pode clicar em 'Ouvir' quando desejar
   };
 
   const handleSelectCase = (idx: number) => {
     soundManager.playPop(soundEnabled);
+    stopSpeaking();
     setCaseIndex(idx);
     setAnswered(false);
     setSelectedOptionId(null);
@@ -110,10 +119,11 @@ export const DetectiveDecisionGame: React.FC<DetectiveDecisionGameProps> = ({
 
   const handleNextCase = () => {
     soundManager.playPop(soundEnabled);
+    stopSpeaking();
     setAnswered(false);
     setSelectedOptionId(null);
 
-    if (caseIndex + 1 < DETECTIVE_CASES.length) {
+    if (caseIndex + 1 < cases.length) {
       setCaseIndex(prev => prev + 1);
     } else {
       setFinishedAll(true);
@@ -121,6 +131,15 @@ export const DetectiveDecisionGame: React.FC<DetectiveDecisionGameProps> = ({
       triggerConfetti();
       onCompleteMission();
     }
+  };
+
+  const handleRestart = () => {
+    stopSpeaking();
+    setCases(shuffleArray(DETECTIVE_CASES));
+    setCaseIndex(0);
+    setAnswered(false);
+    setSelectedOptionId(null);
+    setFinishedAll(false);
   };
 
   const chosenOption = currentCase.options.find(o => o.id === selectedOptionId);
@@ -272,7 +291,7 @@ export const DetectiveDecisionGame: React.FC<DetectiveDecisionGameProps> = ({
                 </div>
 
                 <div className="space-y-3">
-                  {currentCase.options.map((opt) => {
+                  {shuffledOptions.map((opt) => {
                     const isSelected = selectedOptionId === opt.id;
                     let borderClass = 'border-slate-200 hover:border-teal-300 bg-white';
 
@@ -341,6 +360,19 @@ export const DetectiveDecisionGame: React.FC<DetectiveDecisionGameProps> = ({
                       <p className="text-sm text-slate-700 font-medium mt-1">
                         {chosenOption.feedback}
                       </p>
+
+                      <div className="pt-2">
+                        <button
+                          type="button"
+                          onClick={() => readAloud(chosenOption.feedback, true)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-full border border-slate-200 shadow-2xs transition-colors cursor-pointer"
+                          title="Ouvir a explicação da decisão"
+                        >
+                          <Volume2 className="w-3.5 h-3.5 text-teal-600" />
+                          <span>Ouvir Explicação</span>
+                        </button>
+                      </div>
+
                       <div className="mt-3 p-3 bg-white/80 rounded-xl border border-teal-200/80 text-xs font-bold text-teal-900 shadow-xs">
                         💡 Lição do Detetive: {currentCase.learningTakeaway}
                       </div>
@@ -355,7 +387,7 @@ export const DetectiveDecisionGame: React.FC<DetectiveDecisionGameProps> = ({
                       onClick={handleNextCase}
                       className="inline-flex items-center gap-2 bg-teal-800 hover:bg-teal-900 text-white font-extrabold px-5 py-2.5 rounded-xl text-sm transition-all cursor-pointer shadow-md"
                     >
-                      <span>{caseIndex + 1 < DETECTIVE_CASES.length ? 'Próximo Caso' : 'Finalizar Missão 3'}</span>
+                      <span>{caseIndex + 1 < cases.length ? 'Próximo Caso' : 'Finalizar Missão 3'}</span>
                       <ArrowRight className="w-4 h-4" />
                     </motion.button>
                   </div>
@@ -382,12 +414,7 @@ export const DetectiveDecisionGame: React.FC<DetectiveDecisionGameProps> = ({
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
               type="button"
-              onClick={() => {
-                setCaseIndex(0);
-                setAnswered(false);
-                setSelectedOptionId(null);
-                setFinishedAll(false);
-              }}
+              onClick={handleRestart}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-sm font-bold"
             >
               <RotateCcw className="w-4 h-4" />

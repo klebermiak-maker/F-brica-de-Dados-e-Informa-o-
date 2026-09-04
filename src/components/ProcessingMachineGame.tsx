@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MACHINE_CHALLENGES } from '../data/gameData';
-import { soundManager, readAloud } from '../utils/audio';
+import { soundManager, readAloud, stopSpeaking } from '../utils/audio';
 import { triggerConfetti } from '../utils/confetti';
+import { shuffleArray } from '../utils/shuffle';
 import {
   Cpu,
   Sparkles,
@@ -92,11 +93,21 @@ export const ProcessingMachineGame: React.FC<ProcessingMachineGameProps> = ({
   const [completedChallenges, setCompletedChallenges] = useState<number[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Parar qualquer voz ao desmontar componente
+  useEffect(() => {
+    return () => {
+      stopSpeaking();
+    };
+  }, []);
+
   const currentChallenge = MACHINE_CHALLENGES[challengeIndex];
+
+  // Embaralhar as peças brutas para cada desafio para que o aluno explore os dados
+  const shuffledPieces = useMemo(() => shuffleArray(currentChallenge.rawItems), [currentChallenge]);
 
   // Helper to get which pieces are already placed
   const placedPieceIds = Object.values(placedSlots);
-  const availablePieces = currentChallenge.rawItems.filter(p => !placedPieceIds.includes(p.id));
+  const availablePieces = shuffledPieces.filter(p => !placedPieceIds.includes(p.id));
 
   const allSlotsFilled = currentChallenge.targetSlots.every(slot => placedSlots[slot.key]);
 
@@ -159,14 +170,13 @@ export const ProcessingMachineGame: React.FC<ProcessingMachineGameProps> = ({
         onCompleteMission();
       }
 
-      if (voiceReadEnabled) {
-        readAloud(currentChallenge.resultingInformation, true);
-      }
+      // Nota: Não fala automaticamente; o aluno pode clicar no botão 'Ouvir' quando desejar
     }, 1500);
   };
 
   const handleSelectChallenge = (index: number) => {
     soundManager.playPop(soundEnabled);
+    stopSpeaking();
     setChallengeIndex(index);
     setPlacedSlots({});
     setSelectedPieceId(null);
@@ -177,6 +187,7 @@ export const ProcessingMachineGame: React.FC<ProcessingMachineGameProps> = ({
 
   const handleNextChallenge = () => {
     soundManager.playPop(soundEnabled);
+    stopSpeaking();
     setErrorMessage(null);
     if (challengeIndex + 1 < MACHINE_CHALLENGES.length) {
       setChallengeIndex(prev => prev + 1);
@@ -192,6 +203,8 @@ export const ProcessingMachineGame: React.FC<ProcessingMachineGameProps> = ({
   };
 
   const handleResetCurrent = () => {
+    soundManager.playPop(soundEnabled);
+    stopSpeaking();
     setPlacedSlots({});
     setSelectedPieceId(null);
     setIsCompleted(false);
