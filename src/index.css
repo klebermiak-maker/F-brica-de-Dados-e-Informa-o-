@@ -1,0 +1,199 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Fredoka', 'Nunito', system-ui, sans-serif;
+  }
+}
+
+@keyframes float-gentle {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(3deg);
+  }
+}
+
+@keyframes float-reverse {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(8px) rotate(-3deg);
+  }
+}
+
+@keyframes pulse-glow-amber {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(245, 158, 11, 0.7);
+  }
+}
+
+@keyframes pulse-glow-emerald {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.75);
+  }
+}
+
+@keyframes pulse-glow-neon-blue {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.5), 0 0 45px rgba(14, 165, 233, 0.35), inset 0 0 15px rgba(56, 189, 248, 0.25);
+    border-color: rgba(56, 189, 248, 0.85);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(6, 182, 212, 0.85), 0 0 75px rgba(14, 165, 233, 0.6), inset 0 0 30px rgba(56, 189, 248, 0.45);
+    border-color: rgba(186, 230, 253, 1);
+  }
+}
+
+@keyframes neon-text-glow {
+  0%, 100% {
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.8), 0 0 20px rgba(14, 165, 233, 0.6), 0 0 30px rgba(6, 182, 212, 0.4);
+  }
+  50% {
+    text-shadow: 0 0 16px rgba(56, 189, 248, 1), 0 0 35px rgba(14, 165, 233, 0.9), 0 0 55px rgba(6, 182, 212, 0.7);
+  }
+}
+
+@keyframes neon-border-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.4), 0 0 30px rgba(14, 165, 233, 0.2);
+    border-color: rgba(56, 189, 248, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(6, 182, 212, 0.8), 0 0 50px rgba(14, 165, 233, 0.5);
+    border-color: rgba(125, 211, 252, 1);
+  }
+}
+
+@keyframes conveyor-move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 40px 0;
+  }
+}
+
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-150%);
+  }
+  100% {
+    transform: translateX(150%);
+  }
+}
+
+@keyframes beam-flow {
+  0% {
+    opacity: 0.3;
+    transform: scaleX(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1.02);
+  }
+  100% {
+    opacity: 0.3;
+    transform: scaleX(0.85);
+  }
+}
+
+.animate-float-gentle {
+  animation: float-gentle 4.5s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float-reverse 5s ease-in-out infinite;
+}
+
+.animate-pulse-glow-amber {
+  animation: pulse-glow-amber 2s ease-in-out infinite;
+}
+
+.animate-pulse-glow-emerald {
+  animation: pulse-glow-emerald 2s ease-in-out infinite;
+}
+
+.animate-neon-pulse {
+  animation: pulse-glow-neon-blue 2.4s ease-in-out infinite;
+}
+
+.animate-neon-text {
+  animation: neon-text-glow 2.2s ease-in-out infinite;
+}
+
+.animate-neon-border {
+  animation: neon-border-pulse 2s ease-in-out infinite;
+}
+
+.neon-box-glow {
+  box-shadow: 0 0 25px rgba(6, 182, 212, 0.45), 0 0 50px rgba(14, 165, 233, 0.25);
+}
+
+.neon-text-glow {
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.85), 0 0 20px rgba(14, 165, 233, 0.6);
+}
+
+.animate-conveyor {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.08) 0,
+    rgba(255, 255, 255, 0.08) 15px,
+    transparent 15px,
+    transparent 30px
+  );
+  background-size: 42px 42px;
+  animation: conveyor-move 1.2s linear infinite;
+}
+
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.28) 50%,
+    transparent 100%
+  );
+  animation: shimmer-sweep 2.8s infinite;
+  pointer-events: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-certificate, #printable-certificate * {
+    visibility: visible;
+  }
+  #printable-certificate {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    background: white !important;
+  }
+}

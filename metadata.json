@@ -1,0 +1,7 @@
+{
+  "name": "Fábrica de Dados e Informação - EF03CO04",
+  "description": "Jogo educativo interativo alinhado à habilidade BNCC EF03CO04 para ensinar a diferença entre dados brutos e informação com contexto e tomada de decisão.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
